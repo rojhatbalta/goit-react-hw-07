@@ -9,8 +9,8 @@ export const fetchContacts = createAsyncThunk(
     try {
       const res = await Axios.get(URL);
       return res.data;
-    } catch (err) {
-      return thunkAPI.rejectWithValue(err.message);
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.message);
     }
   }
 );
@@ -21,8 +21,8 @@ export const addContact = createAsyncThunk(
     try {
       const res = await Axios.post(URL, newContact);
       return res.data;
-    } catch (err) {
-      return thunkAPI.rejectWithValue(err.message);
+    } catch (error) {
+      return thunkAPI.rejectWithValue(error.message);
     }
   }
 );
