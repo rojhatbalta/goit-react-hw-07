@@ -43,3 +43,5 @@ const contactSlice = createSlice({
 });
 
 export default contactSlice.reducer;
+
+export { deleteContact } from "./contactOptions";
