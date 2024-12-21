@@ -1,20 +1,13 @@
 import { useSelector } from "react-redux";
-import { useMemo } from "react";
+import { selectFilteredContacts } from "../../redux/contactSlice";
 import Contact from "../Contact/Contact";
 import Style from "./ContactList.module.css";
 
 export default function ContactList() {
-  const contacts = useSelector((state) => state.contacts.items);
-  const filterName = useSelector((state) => state.filter.search);
-
-  const filteredContacts = useMemo(() => {
-    return contacts.filter((contact) =>
-      contact.name.toLowerCase().includes(filterName.toLowerCase())
-    );
-  }, [contacts, filterName]);
+  const filteredContacts = useSelector(selectFilteredContacts);
 
   if (filteredContacts.length === 0) {
-    return <p>No contacts found for &quot;{filterName}&quot;</p>;
+    return <p>No contacts found for </p>;
   }
 
   return (

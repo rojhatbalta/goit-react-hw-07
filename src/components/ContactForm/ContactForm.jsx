@@ -1,8 +1,7 @@
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-import { useDispatch, useSelector } from "react-redux";
-import { addContact } from "../../redux/contactSlice";
-import { useCallback } from "react";
+import { useDispatch } from "react-redux";
+import { addContact } from "../../redux/contactOptions";
 import PropTypes from "prop-types";
 import Style from "./ContactForm.module.css";
 
@@ -28,34 +27,12 @@ ValidationError.propTypes = {
 
 export default function ContactForm() {
   const dispatch = useDispatch();
-  const contacts = useSelector((state) => state.contacts.items);
   const initialValues = {
     name: "",
     number: "",
   };
 
-  const handleNumChange = useCallback((e, setFieldValue) => {
-    const { value } = e.target;
-    const formattedValue = value
-      .replace(/[^\d]/g, "")
-      .replace(/(\d{3})(\d{2})(\d{2})/, "$1-$2-$3");
-    setFieldValue("number", formattedValue);
-  }, []);
-
   const handleSubmit = (values, { resetForm }) => {
-    const isDuplicate = contacts.some(
-      (contact) =>
-        contact.name.trim().toLowerCase() ===
-          values.name.trim().toLowerCase() || contact.number === values.number
-    );
-
-    if (isDuplicate) {
-      alert(
-        `This contact already exists! Name: ${values.name}, Number: ${values.number}`
-      );
-      return;
-    }
-
     dispatch(addContact(values));
     resetForm();
   };
@@ -66,12 +43,18 @@ export default function ContactForm() {
       onSubmit={handleSubmit}
       validationSchema={addContactSchema}
     >
-      {({ setFieldValue, isValid, dirty }) => (
+      {({ values, handleChange }) => (
         <Form className={Style.contactForm}>
           <div className={Style.contactFormContainer}>
             <div className={Style.formInput}>
               <label htmlFor="name">Name</label>
-              <Field type="text" name="name" id="name" placeholder="Name" />
+              <Field
+                type="text"
+                name="name"
+                value={values.name}
+                placeholder="Name"
+                onChange={handleChange}
+              />
               <ErrorMessage name="name" component={ValidationError} />
             </div>
             <div className={Style.formInput}>
@@ -79,18 +62,13 @@ export default function ContactForm() {
               <Field
                 type="text"
                 name="number"
-                id="number"
                 placeholder="000-00-00"
-                onChange={(event) => handleNumChange(event, setFieldValue)}
+                value={values.number}
               />
               <ErrorMessage name="number" component={ValidationError} />
             </div>
-            <button
-              type="submit"
-              className={Style.formButton}
-              disabled={!isValid || !dirty}
-            >
-              Add Contact
+            <button type="submit" className={Style.formButton}>
+              Submit
             </button>
           </div>
         </Form>

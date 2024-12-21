@@ -1,35 +1,45 @@
 import { createSlice } from "@reduxjs/toolkit";
-import { v4 as uuidv4 } from "uuid";
-
-const contactSlice = createSlice({
-  name: "contact",
-  initialState: {
-    items: [],
-  },
-  reducers: {
-    addContact: (state, action) => {
-      try {
-        if (!action.payload.name || !action.payload.number) {
-          throw new Error("Name and number are required");
-        }
-        state.items.push({
-          ...action.payload,
-          id: uuidv4(),
-        });
-      } catch (error) {
-        console.error("Add contact failed:", error.message);
-      }
-    },
-    deleteContact: (state, action) => {
-      state.items = state.items.filter((item) => item.id !== action.payload);
-    },
-  },
-});
-
-export const { addContact, deleteContact } = contactSlice.actions;
+import { fetchContacts, addContact, deleteContact } from "./contactOptions";
+import { createSelector } from "@reduxjs/toolkit";
+import { selectNameFilter } from "./filterSlice";
 
 export const selectContacts = (state) => state.contacts.items;
-export const selectContactById = (id) => (state) =>
-  state.contacts.items.find((item) => item.id === id);
+
+export const selectFilteredContacts = createSelector(
+  [selectContacts, selectNameFilter],
+  (contacts, nameFilter) =>
+    contacts.filter((contact) =>
+      contact.name.toLowerCase().includes(nameFilter.toLowerCase())
+    )
+);
+
+const contactSlice = createSlice({
+  name: "contacts",
+  initialState: {
+    items: [],
+    status: "idle",
+    error: null,
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchContacts.pending, (state) => {
+        state.status = "loading";
+      })
+      .addCase(fetchContacts.fulfilled, (state, action) => {
+        state.status = "succeeded";
+        state.items = action.payload;
+      })
+      .addCase(fetchContacts.rejected, (state, action) => {
+        state.status = "failed";
+        state.error = action.error.message;
+      })
+      .addCase(addContact.fulfilled, (state, action) => {
+        state.items = [...state.items, action.payload];
+      })
+      .addCase(deleteContact.fulfilled, (state, action) => {
+        state.items = state.items.filter((item) => item.id !== action.payload);
+      });
+  },
+});
 
 export default contactSlice.reducer;
